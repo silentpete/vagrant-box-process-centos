@@ -1,3 +1,4 @@
+# VAGRANT NOTES
 Vagrant Recommends using Packer to create reproducible builds for your base boxes.
 Vagrant Recommends using Atlas to automate the builds
 
@@ -82,13 +83,42 @@ Download CentOS (I tested with 1708)
 # add vagrant user
 vagrant ALL=(ALL) NOPASSWD:ALL
 ```
-   1. may have to log out and back in
-1. turn on the nic
-   1. sudo -i
-   1. vi /etc/sysconfig/network-scripts/ifcfg-e<tab>
+1. may have to log out and back in
+1. turn on the nic <br> `$ sudo vi /etc/sysconfig/network-scripts/ifcfg-e<tab>`
    1. turn onboot to yes
-1. run updates
+   1. save
+1. run updates<br> `$ sudo yum -y update`
+1. add desired applications<br> `sudo yum -y install gcc kernel-headers wget vim`
+1. install the HashiCorp public key (authorized_keys)
+   1. mkdir -p /home/vagrant/.ssh
+   1. chmod 0700 /home/vagrant/.ssh
+```
+wget --no-check-certificate https://raw.githubusercontent.com/hashicorp/vagrant/master/keys/vagrant.pub -O /home/vagrant/.ssh/authorized_keys
+```
+   1. chmod 0600 /home/vagrant/.ssh/authorized_keys
+   1. chown -R vagrant /home/vagrant/.ssh
+1. restart sshd <br> `$ sudo systemctl restart sshd`
 
+1. download the guest additions (may not need them in centos 1708)
+http://download.virtualbox.org/virtualbox/5.1.28/VBoxGuestAdditions_5.1.28.iso
+1. mount the iso
+   1. add the disk to the virtual box
+   1. create the directory where we will mount the cdrom
+   1. `$ sudo mkdir -p /mnt/cdrom/`
+   1. inside run `$ sudo mount /dev/cdrom /mnt/cdrom`
+
+`sudo sh /mnt/cdrom/VBoxLinuxAdditions.run --nox11`
+
+There will be an error message about "", it doesn't matter.
+
+From your host environment
+
+   1. Open a GIT Bash
+   1. navigate to where you want to store you vagrant box files
+   1. run the following command to package the vagrant box
+```
+vagrant package --base <name of the virtual box>
+```
 
 # TESTING
 To test the box, pretend you are a new user of Vagrant and give it a shot:
