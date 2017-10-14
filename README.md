@@ -1,4 +1,147 @@
-# VAGRANT NOTES
+# VIRTUAL BOX PROCESS (https://www.vagrantup.com/docs/virtualbox/boxes.html)
+This is an at home effort to get more familiar with creating Vagrant Boxes.
+## STEPS
+This process was completed from a Windows 10 environment. To start, download and install the required software.
+- CentOS (tested with: 1708 - https://www.centos.org/)
+- Vagrant (tested with: 2.0.0 - https://www.vagrantup.com/)
+- VirtualBox (tested with: 5.1.28 - https://www.virtualbox.org/)
+- VirtualBox Extention Pack (didn't use, but noting: 5.1.28-117968)
+- VirtualBox Guest Additions (http://download.virtualbox.org/virtualbox/5.1.28/VBoxGuestAdditions_5.1.28.iso)
+
+The Handheld Manual Process:
+1. Start Oracle VirtualBox
+1. Create a new virtual machine
+    1. New
+    1. Name: centos7 (may auto detect OS Type and Version), click next
+    1. Adjust memory: 2GB, click next
+    1. Create a virtual hard disk now, click create
+    1. VMDK, click next
+    1. Dynamic, click next
+    1. Change disk space as desired: tested with 40GB, click create
+1. Adjust setting before starting machine
+    1. turn off audio
+    1. turn off USB
+    1. Network / Adapter 1 should be NAT
+    1. Adapter 1 / Advanced / Port forwarding should have a SSH TCP rule with host 2222 and guest 22 ports assigned.
+1. start virtual machine
+1. Should ask to connect ISO (could connect before starting)
+1. Install CentOS
+    1. Choose language
+    1. Click installation destination and hit done to accept defaults
+    > Unless you want to adjust the partition layout... remember that if you fill '/' you have a sad system. Also, remember you can mount in space on the host.
+    1. Begin Installation
+    1. Set root password to vagrant
+    1. Create user vagrant with password vagrant and make user an Admin
+    1. reboot when finished
+1. login
+1. set passwordless sudo
+    1. sudo visudo
+    ```
+    # add vagrant user
+    vagrant ALL=(ALL) NOPASSWD:ALL
+    ```
+    > May have to log out and back in
+1. By default, CentOS ships with network ONBOOT=no, turn on the nic
+    > While you're in the file, might as well clean it up for this environment, remove IPV6, UUID.
+
+    ```
+    $ sudo vi /etc/sysconfig/network-scripts/ifcfg-e<tab>
+    ```
+    1. Set ONBOOT to yes
+    1. save
+1. Run updates
+    ```
+    $ sudo yum -y update
+    ```
+1. Add desired applications
+    ```
+    $ sudo yum -y install bzip2 gcc kernel-headers kernel-devel wget vim
+
+    $ sudo reboot
+    ```
+1. Install the HashiCorp public key (authorized_keys)
+    ```
+    $ cd ~
+
+    $ mkdir -p /home/vagrant/.ssh
+
+    $ sudo chmod 0700 /home/vagrant/.ssh
+
+    $ wget --no-check-certificate https://raw.githubusercontent.com/hashicorp/vagrant/master/keys/vagrant.pub -O /home/vagrant/.ssh/authorized_keys
+
+    $ sudo chmod 0600 /home/vagrant/.ssh/authorized_keys
+
+    $ sudo chown -R vagrant /home/vagrant/
+    ```
+1. Restart sshd
+    ```
+    $ sudo systemctl restart sshd
+    ```
+1. Install VirtualBox Guest Additions
+    1. mount the iso
+        1. Add the disk to the virtual box
+            1. In VirtualBox Manager, click setting for the centos virtual machine
+            1. Click storage
+            1. click Empty under the IDE controller
+            1. on the right hand side, next to Optical Drive, click the image and navigate to the VirtaulBox Guest Additions ISO
+            1. Click ok
+        1. Back in the VM, create the directory where we will mount the cdrom
+            ```
+            $ sudo mkdir -p /mnt/cdrom/
+
+            $ sudo mount /dev/cdrom /mnt/cdrom
+            ```
+            > expect mounting read only response
+
+    1. Run the additions
+        ```
+        $ sudo sh /mnt/cdrom/VBoxLinuxAdditions.run
+        ```
+        > expect 'Could not find the X.Org or XFree86 Window System, skipping.' Can test that the serice is running with "VBoxService --help" or VBoxControl --help"
+
+1. Clean up before packaging
+    1. remove any unnessesary packages
+    1. remove yum cache
+        ```
+        $ sudo yum clean all
+        ```
+    1. Unmount drive
+        ```
+        $ sudo umount /dev/cdrom
+        ```
+    1. Remove ISO from VM in VirtualBox Manager
+    1. Final Step before packing is to fill the hard drive with zeros, this helps with compression, also clear the history.
+        ```
+        $ sudo dd if=/dev/zero of=/EMPTY bs=1M
+
+        $ sudo cat /dev/null > ~/.bash_history && history -c
+
+        $ sudo rm -f /EMPTY
+        ```
+1. From your host environment, package the vagrant box
+   1. Open a GIT Bash or CMD
+   1. navigate to where you want to store you vagrant box files (ie. /vagrant_boxes)
+   1. run the following command to package the vagrant box
+    ```
+    vagrant package --base <name of the virtual box>
+    ```
+    > you should now have a package.box file in your directory
+
+# TESTING
+To test the box, pretend you are a new user of Vagrant (be daring and delete your centos7 VM first) and give it a shot:
+```
+$ vagrant box add <name> /path/to/the/package.box
+
+$ vagrant init <name>
+
+$ vagrant up
+
+$ vagrant ssh
+
+$ ping google.com
+```
+
+# MY VAGRANT NOTES
 Vagrant Recommends using Packer to create reproducible builds for your base boxes.
 Vagrant Recommends using Atlas to automate the builds
 
@@ -19,7 +162,6 @@ Assign what is needed
 
 Disable any non essencial hardware
 
-# VIRTUAL BOX PROCESS (https://www.vagrantup.com/docs/virtualbox/boxes.html)
 Box File (tar, tar.gz, zip)
 - Within the archive, Vagrant does expect a single file: metadata.json. This is a JSON file
 
@@ -56,77 +198,8 @@ url key in the JSON can also be a file path
 
 Box Information
 
-## VirtualBox Requirements
-- The first network interface (adapter 1) must be a NAT adapter. Vagrant uses this to connect the first time.
-
-- The MAC address of the first network interface (the NAT adapter) should be noted, since you will need to put it in a Vagrantfile later as the value for config.vm.base_mac. To get this value, use the VirtualBox GUI.
-
-- VirtualBox Guest Additions for Linux
-## STEPS
-Download Vagrant (I tested with 2.0.0)
-Download VirtualBox (I tested with 5.1.28)
-Download VirtualBox Extention Pack (5.1.28-117968)
-Download CentOS (I tested with 1708)
-
-1. Start Oracle VirtualBox
-1. Create a new virtual machine
-1. added a 30 GB hard drive VDI, and 4 GB memory
-   1. need to figure out partitioning, can't have everything on /
-1. turn off USB
-1. turn off floppy drive
-1. turn off audio
-1. start virtual machined
-1. login
-1. set passwordless sudo
-   1. sudo visudo
-```
-# add vagrant user
-vagrant ALL=(ALL) NOPASSWD:ALL
-```
-1. may have to log out and back in
-1. turn on the nic <br> `$ sudo vi /etc/sysconfig/network-scripts/ifcfg-e<tab>`
-   1. turn onboot to yes
-   1. save
-1. run updates<br> `$ sudo yum -y update`
-1. add desired applications<br> `sudo yum -y install gcc kernel-headers wget vim`
-1. install the HashiCorp public key (authorized_keys)
-   1. mkdir -p /home/vagrant/.ssh
-   1. chmod 0700 /home/vagrant/.ssh
-```
-wget --no-check-certificate https://raw.githubusercontent.com/hashicorp/vagrant/master/keys/vagrant.pub -O /home/vagrant/.ssh/authorized_keys
-```
-   1. chmod 0600 /home/vagrant/.ssh/authorized_keys
-   1. chown -R vagrant /home/vagrant/.ssh
-1. restart sshd <br> `$ sudo systemctl restart sshd`
-
-1. download the guest additions (may not need them in centos 1708)
-http://download.virtualbox.org/virtualbox/5.1.28/VBoxGuestAdditions_5.1.28.iso
-1. mount the iso
-   1. add the disk to the virtual box
-   1. create the directory where we will mount the cdrom
-   1. `$ sudo mkdir -p /mnt/cdrom/`
-   1. inside run `$ sudo mount /dev/cdrom /mnt/cdrom`
-
-`sudo sh /mnt/cdrom/VBoxLinuxAdditions.run --nox11`
-
-There will be an error message about "", it doesn't matter.
-
-From your host environment
-
-   1. Open a GIT Bash
-   1. navigate to where you want to store you vagrant box files
-   1. run the following command to package the vagrant box
-```
-vagrant package --base <name of the virtual box>
-```
-
-# TESTING
-To test the box, pretend you are a new user of Vagrant and give it a shot:
-```
-$ vagrant box add my-box /path/to/the/new.box
-...
-$ vagrant init my-box
-...
-$ vagrant up
-...
-```
+# REFERENCES
+- https://www.engineyard.com/blog/building-a-vagrant-box
+- Vagrant Up and Running (book)
+- vagrantup.com
+- virtualbox.org
