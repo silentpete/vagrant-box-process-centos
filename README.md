@@ -1,4 +1,4 @@
-# VIRTUAL BOX PROCESS (https://www.vagrantup.com/docs/virtualbox/boxes.html)
+# CENTOS 7 1708 VIRTUAL BOX PROCESS (https://www.vagrantup.com/docs/virtualbox/boxes.html)
 This is an at home effort to get more familiar with creating Vagrant Boxes.
 ## STEPS
 This process was completed from a Windows 10 environment. To start, download and install the required software.
