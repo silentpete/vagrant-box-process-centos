@@ -95,13 +95,13 @@ The Handheld Manual Process:
 
             $ sudo mount /dev/cdrom /mnt/cdrom
             ```
-            > expect mounting read only response
+            > expect: 'mount: /dev/<vol> is write-protected, mounting read-only'
 
     1. Run the additions
         ```
         $ sudo sh /mnt/cdrom/VBoxLinuxAdditions.run
         ```
-        > expect 'Could not find the X.Org or XFree86 Window System, skipping.' Can test that the serice is running with "VBoxService --help" or VBoxControl --help"
+        > expect: 'Could not find the X.Org or XFree86 Window System, skipping.' Can test that the serice is running with "VBoxService --help" or VBoxControl --help"
 
 1. Clean up before packaging
     1. remove any unnessesary packages
@@ -118,16 +118,16 @@ The Handheld Manual Process:
         ```
         $ sudo dd if=/dev/zero of=/EMPTY bs=1M
 
-        $ sudo cat /dev/null > ~/.bash_history && history -c
-
         $ sudo rm -f /EMPTY
+
+        $ sudo cat /dev/null > ~/.bash_history && history -c
         ```
 1. From your host environment, package the vagrant box
    1. Open a GIT Bash or CMD
    1. navigate to where you want to store you vagrant box files (ie. /vagrant_boxes)
    1. run the following command to package the vagrant box
     ```
-    vagrant package --base <name of the virtual box>
+    vagrant package --base <name of the virtual box> --output <name of file>
     ```
     > you should now have a package.box file in your directory
 
