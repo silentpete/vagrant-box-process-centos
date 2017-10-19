@@ -49,6 +49,10 @@ The Handheld Manual Process:
     ```
     1. Set ONBOOT to yes
     1. save
+    1. Restart the network service
+        ```
+        $ sudo systemctl restart network
+        ```
 1. Run updates
     ```
     $ sudo yum -y update
