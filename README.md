@@ -1,5 +1,8 @@
-# CENTOS 7 1708 VIRTUAL BOX PROCESS (https://www.vagrantup.com/docs/virtualbox/boxes.html)
+# CENTOS 7 1708 VIRTUAL BOX PROCESS
 This is an at home effort to get more familiar with creating Vagrant Boxes.
+
+In this write up, you should be able to follow along and end up with an CentOS 7 base development environment up and running.
+
 ## STEPS
 This process was completed from a Windows 10 environment. To start, download and install the required software.
 - CentOS (tested with: 1708 - https://www.centos.org/)
@@ -63,6 +66,7 @@ The Handheld Manual Process:
 
     $ sudo reboot
     ```
+    > Note: while in the virtual machine, prior to saving it as a box, this would be a good time to add in other packages you may want such as: docker-ce, htop, httpd-tools, git, maven, ruby, ansible
 1. Install the HashiCorp public key (authorized_keys)
     ```
     $ cd ~
@@ -129,7 +133,7 @@ The Handheld Manual Process:
     ```
     vagrant package --base <name of the virtual box> --output <name of file>
     ```
-    > you should now have a package.box file in your directory
+    > you should now have a package.box file in your directory or whatever you named it
 
 # TESTING
 To test the box, pretend you are a new user of Vagrant (be daring and delete your centos7 VM first) and give it a shot:
@@ -146,6 +150,8 @@ $ ping google.com
 ```
 
 # MY VAGRANT NOTES
+https://www.vagrantup.com/docs/virtualbox/boxes.html
+
 Vagrant Recommends using Packer to create reproducible builds for your base boxes.
 Vagrant Recommends using Atlas to automate the builds
 
