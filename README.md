@@ -1,17 +1,23 @@
-# CENTOS 7 1708 VIRTUAL BOX PROCESS
+# CENTOS 7 1804 VIRTUAL BOX PROCESS
+
 This is an at home effort to get more familiar with creating Vagrant Boxes.
 
 In this write up, you should be able to follow along and end up with an CentOS 7 base development environment up and running.
 
 ## STEPS
+
+---
+
 This process was completed from a Windows 10 environment. To start, download and install the required software.
-- CentOS (tested with: 1708 - https://www.centos.org/)
-- Vagrant (tested with: 2.0.0 - https://www.vagrantup.com/)
-- VirtualBox (tested with: 5.1.28 - https://www.virtualbox.org/)
-- VirtualBox Extention Pack (didn't use, but noting: 5.1.28-117968)
-- VirtualBox Guest Additions (http://download.virtualbox.org/virtualbox/5.1.28/VBoxGuestAdditions_5.1.28.iso)
+
+- CentOS (tested with: 1804 - https://www.centos.org/)
+- Vagrant (tested with: 2.1.1 - https://www.vagrantup.com/)
+- VirtualBox (tested with: 5.2.12 - https://www.virtualbox.org/)
+- VirtualBox Extention Pack (tested with: 5.2.12)
+- VirtualBox Guest Additions (http://download.virtualbox.org/virtualbox/5.2.12/VBoxGuestAdditions_5.2.12.iso)
 
 The Handheld Manual Process:
+
 1. Start Oracle VirtualBox
 1. Create a new virtual machine
     1. New
@@ -39,7 +45,7 @@ The Handheld Manual Process:
 1. login
 1. set passwordless sudo
     1. sudo visudo
-    ```
+    ```none
     # add vagrant user
     vagrant ALL=(ALL) NOPASSWD:ALL
     ```
@@ -47,43 +53,43 @@ The Handheld Manual Process:
 1. By default, CentOS ships with network ONBOOT=no, turn on the nic
     > While you're in the file, might as well clean it up for this environment, remove IPV6, UUID.
 
-    ```
-    $ sudo vi /etc/sysconfig/network-scripts/ifcfg-e<tab>
+    ```none
+    sudo vi /etc/sysconfig/network-scripts/ifcfg-e<tab>
     ```
     1. Set ONBOOT to yes
     1. save
     1. Restart the network service
-        ```
-        $ sudo systemctl restart network
+        ```none
+        sudo systemctl restart network
         ```
 1. Run updates
-    ```
-    $ sudo yum -y update
+    ```none
+    sudo yum -y update
     ```
 1. Add desired applications
-    ```
-    $ sudo yum -y install bzip2 gcc kernel-headers kernel-devel wget vim
+    ```none
+    sudo yum -y install bzip2 gcc kernel-headers kernel-devel wget vim
 
-    $ sudo reboot
+    sudo reboot
     ```
     > Note: while in the virtual machine, prior to saving it as a box, this would be a good time to add in other packages you may want such as: docker-ce, htop, httpd-tools, git, maven, ruby, ansible
 1. Install the HashiCorp public key (authorized_keys)
-    ```
-    $ cd ~
+    ```none
+    cd ~
 
-    $ mkdir -p /home/vagrant/.ssh
+    mkdir -p /home/vagrant/.ssh
 
-    $ sudo chmod 0700 /home/vagrant/.ssh
+    sudo chmod 0700 /home/vagrant/.ssh
 
-    $ wget --no-check-certificate https://raw.githubusercontent.com/hashicorp/vagrant/master/keys/vagrant.pub -O /home/vagrant/.ssh/authorized_keys
+    wget --no-check-certificate https://raw.githubusercontent.com/hashicorp/vagrant/master/keys/vagrant.pub -O /home/vagrant/.ssh/authorized_keys
 
-    $ sudo chmod 0600 /home/vagrant/.ssh/authorized_keys
+    sudo chmod 0600 /home/vagrant/.ssh/authorized_keys
 
-    $ sudo chown -R vagrant /home/vagrant/
+    sudo chown -R vagrant /home/vagrant/
     ```
 1. Restart sshd
-    ```
-    $ sudo systemctl restart sshd
+    ```none
+    sudo systemctl restart sshd
     ```
 1. Install VirtualBox Guest Additions
     1. mount the iso
@@ -94,74 +100,83 @@ The Handheld Manual Process:
             1. on the right hand side, next to Optical Drive, click the image and navigate to the VirtaulBox Guest Additions ISO
             1. Click ok
         1. Back in the VM, create the directory where we will mount the cdrom
-            ```
-            $ sudo mkdir -p /mnt/cdrom/
+            ```none
+            sudo mkdir -p /mnt/cdrom/
 
-            $ sudo mount /dev/cdrom /mnt/cdrom
+            sudo mount /dev/cdrom /mnt/cdrom
             ```
             > expect: 'mount: /dev/<vol> is write-protected, mounting read-only'
 
     1. Run the additions
-        ```
-        $ sudo sh /mnt/cdrom/VBoxLinuxAdditions.run
+        ```none
+        sudo sh /mnt/cdrom/VBoxLinuxAdditions.run
         ```
         > expect: 'Could not find the X.Org or XFree86 Window System, skipping.' Can test that the serice is running with "VBoxService --help" or VBoxControl --help"
 
 1. Clean up before packaging
     1. remove any unnessesary packages
     1. remove yum cache
-        ```
-        $ sudo yum clean all
+        ```none
+        sudo yum clean all
         ```
     1. Unmount drive
-        ```
-        $ sudo umount /dev/cdrom
+        ```none
+        sudo umount /dev/cdrom
         ```
     1. Remove ISO from VM in VirtualBox Manager
     1. Final Step before packing is to fill the hard drive with zeros, this helps with compression, also clear the history.
-        ```
-        $ sudo dd if=/dev/zero of=/EMPTY bs=1M
+        ```none
+        sudo dd if=/dev/zero of=/EMPTY bs=1M
 
-        $ sudo rm -f /EMPTY
+        sudo rm -f /EMPTY
 
-        $ sudo cat /dev/null > ~/.bash_history && history -c
+        sudo cat /dev/null > ~/.bash_history && history -c
         ```
 1. From your host environment, package the vagrant box
    1. Open a GIT Bash or CMD
    1. navigate to where you want to store you vagrant box files (ie. /vagrant_boxes)
    1. run the following command to package the vagrant box
-    ```
+    ```none
     vagrant package --base <name of the virtual box> --output <name of file>
     ```
     > you should now have a package.box file in your directory or whatever you named it
 
-# TESTING
+## TESTING
+
+---
+
 To test the box, pretend you are a new user of Vagrant (be daring and delete your centos7 VM first) and give it a shot:
+
+```none
+vagrant box add <name> /path/to/the/package.box
+
+vagrant init <name>
+
+vagrant up
+
+vagrant ssh
+
+ping google.com
 ```
-$ vagrant box add <name> /path/to/the/package.box
 
-$ vagrant init <name>
+## MY VAGRANT NOTES
 
-$ vagrant up
+---
 
-$ vagrant ssh
-
-$ ping google.com
-```
-
-# MY VAGRANT NOTES
 https://www.vagrantup.com/docs/virtualbox/boxes.html
 
 Vagrant Recommends using Packer to create reproducible builds for your base boxes.
 Vagrant Recommends using Atlas to automate the builds
 
 Vagrant Expected Defaults (https://www.vagrantup.com/docs/boxes/base.html)
+
 - "vagrant" user with vagrant password
 - Password-less Sudo, add "vagrant ALL=(ALL) NOPASSWD: ALL" (with no ") to the #visudo
-- vagrant doesn't use a pty or tty, so if you want one you have to configure it into the vagrantfile
+- vagrant doesn't use a pty or tty, so if you want one you have to configure it into the Vagrantfile
 - to keep ssh speedy, set the UseDNS configuration to no in the SSH server configuration (This avoids a reverse DNS lookup on the connecting SSH client which can take many seconds.)
 
-if creating a box for Virtual Box, make sure it has:
+If creating a box for Virtual Box, make sure it has:
+
 - VirtualBox guest additions
 
 Disk Space
@@ -172,43 +187,16 @@ Assign what is needed
 
 Disable any non essencial hardware
 
-Box File (tar, tar.gz, zip)
-- Within the archive, Vagrant does expect a single file: metadata.json. This is a JSON file
+### Troubleshooting
 
-Minimum contents of metadata.json
-```
-{
-  "provider": "virtualbox"
-}
-```
+Error: `default: Warning: Authentication failure. Retrying…`
 
-Box Catalog Metadata
+Resolution: make sure "Install the HashiCorp public key" step were correctly performed
 
-Full example
-```
-{
-  "name": "hashicorp/precise64",
-  "description": "This box contains Ubuntu 12.04 LTS 64-bit.",
-  "versions": [
-    {
-      "version": "0.1.0",
-      "providers": [
-        {
-          "name": "virtualbox",
-          "url": "http://somewhere.com/precise64_010_virtualbox.box",
-          "checksum_type": "sha1",
-          "checksum": "foo"
-        }
-      ]
-    }
-  ]
-}
-```
-url key in the JSON can also be a file path
+## REFERENCES
 
-Box Information
+---
 
-# REFERENCES
 - https://www.engineyard.com/blog/building-a-vagrant-box
 - Vagrant Up and Running (book)
 - vagrantup.com
