@@ -6,8 +6,6 @@ In this write up, you should be able to follow along and end up with an CentOS 7
 
 ## STEPS
 
----
-
 This process was completed from a Windows 10 environment. To start, download and install the required software.
 
 - CentOS (tested with: 1804 - https://www.centos.org/)
@@ -143,8 +141,6 @@ The Handheld Manual Process:
 
 ## TESTING
 
----
-
 To test the box, pretend you are a new user of Vagrant (be daring and delete your centos7 VM first) and give it a shot:
 
 ```none
@@ -160,8 +156,6 @@ ping google.com
 ```
 
 ## MY VAGRANT NOTES
-
----
 
 https://www.vagrantup.com/docs/virtualbox/boxes.html
 
@@ -194,8 +188,6 @@ Error: `default: Warning: Authentication failure. Retrying…`
 Resolution: make sure "Install the HashiCorp public key" step were correctly performed
 
 ## REFERENCES
-
----
 
 - https://www.engineyard.com/blog/building-a-vagrant-box
 - Vagrant Up and Running (book)
