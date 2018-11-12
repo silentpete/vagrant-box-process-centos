@@ -110,12 +110,18 @@ The Handheld Manual Process:
         sudo sh /mnt/cdrom/VBoxLinuxAdditions.run
         ```
         > expect: 'Could not find the X.Org or XFree86 Window System, skipping.' Can test that the serice is running with "VBoxService --help" or VBoxControl --help"
-
+1. Adjust SELinux if desired
+    1. Set to Permissive
+        ```none
+        sudo setenforce Permissive
+        ```
 1. Clean up before packaging
     1. remove any unnessesary packages
     1. remove yum cache
         ```none
         sudo yum clean all
+
+        sudo rm -rf /var/cache/yum
         ```
     1. Unmount drive
         ```none
