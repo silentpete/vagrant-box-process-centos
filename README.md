@@ -1,4 +1,4 @@
-# CENTOS 7 1804 VIRTUAL BOX PROCESS
+# CENTOS 7 1908 VIRTUAL BOX PROCESS
 
 This is an at home effort to get more familiar with creating Vagrant Boxes.
 
@@ -8,11 +8,11 @@ In this write up, you should be able to follow along and end up with an CentOS 7
 
 This process was completed from a Windows 10 environment. To start, download and install the required software.
 
-- CentOS (tested with: 1804 - https://www.centos.org/)
-- Vagrant (tested with: 2.1.1 - https://www.vagrantup.com/)
-- VirtualBox (tested with: 5.2.12 - https://www.virtualbox.org/)
-- VirtualBox Extention Pack (tested with: 5.2.12)
-- VirtualBox Guest Additions (http://download.virtualbox.org/virtualbox/5.2.12/VBoxGuestAdditions_5.2.12.iso)
+- CentOS (tested with: 1908 - [https://www.centos.org/](https://www.centos.org/))
+- Vagrant (tested with: 2.2.7 - [https://www.vagrantup.com/](https://www.vagrantup.com/)) note: vagrant 2.2.6 and above should work with 6.1.x
+- VirtualBox (tested with: 6.1.2 - [https://www.virtualbox.org/](https://www.virtualbox.org/))
+- VirtualBox Extention Pack (tested with: [https://download.virtualbox.org/virtualbox/6.1.2/Oracle_VM_VirtualBox_Extension_Pack-6.1.2.vbox-extpack](https://download.virtualbox.org/virtualbox/6.1.2/Oracle_VM_VirtualBox_Extension_Pack-6.1.2.vbox-extpack))
+- VirtualBox Guest Additions (tested with: [http://download.virtualbox.org/virtualbox/6.1.2/VBoxGuestAdditions_6.1.2.iso](http://download.virtualbox.org/virtualbox/6.1.2/VBoxGuestAdditions_6.1.2.iso))
 
 The Handheld Manual Process:
 
@@ -43,35 +43,46 @@ The Handheld Manual Process:
 1. login
 1. set passwordless sudo
     1. sudo visudo
+
     ```none
     # add vagrant user
     vagrant ALL=(ALL) NOPASSWD:ALL
     ```
+
     > May have to log out and back in
+
 1. By default, CentOS ships with network ONBOOT=no, turn on the nic
     > While you're in the file, might as well clean it up for this environment, remove IPV6, UUID.
 
     ```none
     sudo vi /etc/sysconfig/network-scripts/ifcfg-e<tab>
     ```
+
     1. Set ONBOOT to yes
     1. save
     1. Restart the network service
+
         ```none
         sudo systemctl restart network
         ```
+
 1. Run updates
+
     ```none
     sudo yum -y update
     ```
+
 1. Add desired applications
+
     ```none
     sudo yum -y install bzip2 gcc kernel-headers kernel-devel wget vim
 
     sudo reboot
     ```
+
     > Note: while in the virtual machine, prior to saving it as a box, this would be a good time to add in other packages you may want such as: docker-ce, htop, httpd-tools, git, maven, ruby, ansible
 1. Install the HashiCorp public key (authorized_keys)
+
     ```none
     cd ~
 
@@ -85,10 +96,13 @@ The Handheld Manual Process:
 
     sudo chown -R vagrant /home/vagrant/
     ```
+
 1. Restart sshd
+
     ```none
     sudo systemctl restart sshd
     ```
+
 1. Install VirtualBox Guest Additions
     1. mount the iso
         1. Add the disk to the virtual box
@@ -98,37 +112,49 @@ The Handheld Manual Process:
             1. on the right hand side, next to Optical Drive, click the image and navigate to the VirtaulBox Guest Additions ISO
             1. Click ok
         1. Back in the VM, create the directory where we will mount the cdrom
+
             ```none
             sudo mkdir -p /mnt/cdrom/
 
             sudo mount /dev/cdrom /mnt/cdrom
             ```
+
             > expect: 'mount: /dev/<vol> is write-protected, mounting read-only'
 
     1. Run the additions
+
         ```none
         sudo sh /mnt/cdrom/VBoxLinuxAdditions.run
         ```
-        > expect: 'Could not find the X.Org or XFree86 Window System, skipping.' Can test that the serice is running with "VBoxService --help" or VBoxControl --help"
+
+        > might get: 'Could not find the X.Org or XFree86 Window System, skipping.' Can test that the serice is running with "VBoxService --help" or VBoxControl --help"
+
 1. Adjust SELinux if desired
     1. Set to Permissive
+
         ```none
         sudo setenforce Permissive
         ```
+
 1. Clean up before packaging
     1. remove any unnessesary packages
     1. remove yum cache
+
         ```none
         sudo yum clean all
 
         sudo rm -rf /var/cache/yum
         ```
+
     1. Unmount drive
+
         ```none
         sudo umount /dev/cdrom
         ```
+
     1. Remove ISO from VM in VirtualBox Manager
     1. Final Step before packing is to fill the hard drive with zeros, this helps with compression, also clear the history.
+
         ```none
         sudo dd if=/dev/zero of=/EMPTY bs=1M
 
@@ -136,13 +162,17 @@ The Handheld Manual Process:
 
         sudo cat /dev/null > ~/.bash_history && history -c
         ```
+
 1. From your host environment, package the vagrant box
    1. Open a GIT Bash or CMD
    1. navigate to where you want to store you vagrant box files (ie. /vagrant_boxes)
    1. run the following command to package the vagrant box
+
     ```none
     vagrant package --base <name of the virtual box> --output <name of file>
+    ie. vagrant package --base centos7 --output <date>_centos7_1908.box
     ```
+
     > you should now have a package.box file in your directory or whatever you named it
 
 ## TESTING
@@ -161,14 +191,32 @@ vagrant ssh
 ping google.com
 ```
 
+## Vagrantfile Example
+
+```none
+HOSTNAME="vagrant"
+Vagrant.configure("2") do |config|
+  # https://docs.vagrantup.com.
+  config.vm.box = "centos7_1908.box"
+  config.vm.hostname = "#{HOSTNAME}"
+  config.vm.provider "virtualbox" do |v|
+    v.name = "#{HOSTNAME}"
+    v.memory = 2048
+    v.cpus = 2
+  end
+  config.vm.box_check_update = false
+  config.vm.network "forwarded_port", guest: 80, host: 8080
+end
+```
+
 ## MY VAGRANT NOTES
 
-https://www.vagrantup.com/docs/virtualbox/boxes.html
+[https://www.vagrantup.com/docs/virtualbox/boxes.html](https://www.vagrantup.com/docs/virtualbox/boxes.html)
 
 Vagrant Recommends using Packer to create reproducible builds for your base boxes.
 Vagrant Recommends using Atlas to automate the builds
 
-Vagrant Expected Defaults (https://www.vagrantup.com/docs/boxes/base.html)
+Vagrant Expected Defaults ([https://www.vagrantup.com/docs/boxes/base.html](https://www.vagrantup.com/docs/boxes/base.html))
 
 - "vagrant" user with vagrant password
 - Password-less Sudo, add "vagrant ALL=(ALL) NOPASSWD: ALL" (with no ") to the #visudo
@@ -189,13 +237,13 @@ Disable any non essencial hardware
 
 ### Troubleshooting
 
-Error: `default: Warning: Authentication failure. Retrying…`
+Error: `default: Warning: Authentication failure. Retrying...`
 
-Resolution: make sure "Install the HashiCorp public key" step were correctly performed
+Resolution: make sure "Install the HashiCorp public key" step was correctly performed
 
 ## REFERENCES
 
-- https://www.engineyard.com/blog/building-a-vagrant-box
+- [https://www.engineyard.com/blog/building-a-vagrant-box](https://www.engineyard.com/blog/building-a-vagrant-box)
 - Vagrant Up and Running (book)
 - vagrantup.com
 - virtualbox.org
