@@ -1,4 +1,4 @@
-# CENTOS 7 1908 VIRTUAL BOX PROCESS
+# CENTOS 7 2009 VIRTUAL BOX PROCESS
 
 This is an at home effort to get more familiar with creating Vagrant Boxes.
 
@@ -8,11 +8,10 @@ In this write up, you should be able to follow along and end up with an CentOS 7
 
 This process was completed from a Windows 10 environment. To start, download and install the required software.
 
-- CentOS (tested with: 1908 - [https://www.centos.org/](https://www.centos.org/))
-- Vagrant (tested with: 2.2.7 - [https://www.vagrantup.com/](https://www.vagrantup.com/)) note: vagrant 2.2.6 and above should work with 6.1.x
-- VirtualBox (tested with: 6.1.2 - [https://www.virtualbox.org/](https://www.virtualbox.org/))
-- VirtualBox Extention Pack (tested with: [https://download.virtualbox.org/virtualbox/6.1.2/Oracle_VM_VirtualBox_Extension_Pack-6.1.2.vbox-extpack](https://download.virtualbox.org/virtualbox/6.1.2/Oracle_VM_VirtualBox_Extension_Pack-6.1.2.vbox-extpack))
-- VirtualBox Guest Additions (tested with: [http://download.virtualbox.org/virtualbox/6.1.2/VBoxGuestAdditions_6.1.2.iso](http://download.virtualbox.org/virtualbox/6.1.2/VBoxGuestAdditions_6.1.2.iso))
+- CentOS (tested with: 2009 - [https://www.centos.org/](https://www.centos.org/))
+- Vagrant (tested with: 2.2.19 - [https://www.vagrantup.com/](https://www.vagrantup.com/)) note: vagrant 2.2.6 and above should work with 6.1.x
+- VirtualBox (tested with: 6.1.28 - [https://www.virtualbox.org/](https://www.virtualbox.org/))
+- VirtualBox Guest Additions (tested with: <https://download.virtualbox.org/virtualbox/6.1.28/VBoxGuestAdditions_6.1.28.iso>)
 
 The Handheld Manual Process:
 
@@ -72,15 +71,15 @@ The Handheld Manual Process:
     sudo yum -y update
     ```
 
-1. Add desired applications
+1. Add required applications
 
     ```none
-    sudo yum -y install bzip2 gcc kernel-headers kernel-devel wget vim
+    sudo yum -y install bzip2 gcc kernel-headers kernel-devel wget
 
     sudo reboot
     ```
 
-    > Note: while in the virtual machine, prior to saving it as a box, this would be a good time to add in other packages you may want such as: docker-ce, htop, httpd-tools, git, maven, ruby, ansible
+    > Note: while in the virtual machine, prior to saving it as a box, this would be a good time to add in other packages you may want such as: docker-ce, htop, httpd-tools, git, maven, ruby, ansible, vim
 1. Install the HashiCorp public key (authorized_keys)
 
     ```none
@@ -170,7 +169,7 @@ The Handheld Manual Process:
 
     ```none
     vagrant package --base <name of the virtual box> --output <name of file>
-    ie. vagrant package --base centos7 --output <date>_centos7_1908.box
+    ie. vagrant package --base centos7 --output <date>_centos7_2009.box
     ```
 
     > you should now have a package.box file in your directory or whatever you named it
@@ -197,7 +196,7 @@ ping google.com
 HOSTNAME="vagrant"
 Vagrant.configure("2") do |config|
   # https://docs.vagrantup.com.
-  config.vm.box = "centos7_1908.box"
+  config.vm.box = "centos7_2009.box"
   config.vm.hostname = "#{HOSTNAME}"
   config.vm.provider "virtualbox" do |v|
     v.name = "#{HOSTNAME}"
