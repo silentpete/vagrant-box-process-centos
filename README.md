@@ -74,7 +74,7 @@ The Handheld Manual Process:
 1. Add required applications
 
     ```none
-    sudo yum -y install bzip2 gcc kernel-headers kernel-devel wget
+    sudo yum -y install bzip2 gcc kernel-headers kernel-devel
 
     sudo reboot
     ```
@@ -89,7 +89,7 @@ The Handheld Manual Process:
 
     sudo chmod 0700 /home/vagrant/.ssh
 
-    wget --no-check-certificate https://raw.githubusercontent.com/hashicorp/vagrant/master/keys/vagrant.pub -O /home/vagrant/.ssh/authorized_keys
+    curl -k https://raw.githubusercontent.com/hashicorp/vagrant/main/keys/vagrant.pub -o /home/vagrant/.ssh/authorized_keys
 
     sudo chmod 0600 /home/vagrant/.ssh/authorized_keys
 
